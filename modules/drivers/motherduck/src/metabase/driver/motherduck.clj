@@ -51,12 +51,14 @@
   ;; expects a root certificate file in ~/.postgresql instead. `verify-full` also checks the hostname. Through an SSH
   ;; tunnel, pgjdbc would check it against localhost, so check only the chain there.
   ;; The startup option enables Metabase compatibility, including Postgres-style array serialization and command tags
-  ;; for CREATE TABLE and INSERT.
+  ;; for CREATE TABLE and INSERT. Single attach mode attaches only the connected database instead of the whole
+  ;; MotherDuck workspace, which avoids a background attach fan-out of every database in the account. See
+  ;; https://motherduck.com/docs/sql-reference/postgres-endpoint/
   ;; The endpoint ignores the user name and the form has no field for it; send the one MotherDuck's docs use.
   (-> (sql-jdbc.conn/connection-details->spec :postgres (assoc details :ssl true, :user "postgres"))
       (assoc :sslmode    (if tunnel-enabled "verify-ca" "verify-full")
              :sslfactory "org.postgresql.ssl.DefaultJavaSSLFactory"
-             :options    "--compatibility-mode=metabase")))
+             :options    "--compatibility-mode=metabase --attach_mode=single")))
 
 ;;; Resetting the current database at checkout
 ;;;
